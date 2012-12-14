@@ -8,7 +8,7 @@ This is a GAE app. The user system is piggy backed off the Google authentication
 
 ## Todo
 
-  - show list of results (including by competitor)
+  - show list of results by competitor
   - _undo_ a result by winding back all adjustments and replaying the subsequent results to readjust ranking
   - feature which estimates the probable ranking changes if a player defeats another player 
   - docking of points if no matches played in set time period (+ points awarded for playing high number of matches ?? top 20% of playing frequency)

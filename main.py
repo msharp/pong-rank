@@ -59,6 +59,13 @@ class Result(db.Model):
   winner_new_rating = db.FloatProperty()
   loser_new_rating = db.FloatProperty()
 
+  def winner_name(self):
+    c = Competitor.by_id(self.winner_user_id)
+    return c.nickname
+
+  def loser_name(self):
+    c = Competitor.by_id(self.loser_user_id)
+    return c.nickname
 
 class MainHandler(webapp2.RequestHandler):
   def get(self):
@@ -94,6 +101,14 @@ class MainHandler(webapp2.RequestHandler):
         logging.info("recognised competitor " + u.userid)
       return u
 
+class ResultsHandler(webapp2.RequestHandler):
+  def get(self):
+    q = Result.all()
+    q.order('-date_played')
+    q.get()
+    template_values = {'results': [r for r in q]}
+    template = jinja_environment.get_template('templates/results.html')
+    self.response.out.write(template.render(template_values)) 
 
 class ResultHandler(webapp2.RequestHandler):
   def get(self):
@@ -109,30 +124,8 @@ class ResultHandler(webapp2.RequestHandler):
         winner = Competitor.by_id(winner_id)
         loser = Competitor.by_id(loser_id)
         
-        logging.info("result: %s(%s) defeated %s(%s)" % (winner.nickname, winner.rating, loser.nickname, loser.rating))
-        
-        new_ratings = self.calculate_elo_rank(winner.rating,loser.rating)
-
-        logging.info("new ratings are:")
-        logging.info("  %s - %s" % (winner.nickname, new_ratings[0]))
-        logging.info("  %s - %s" % (loser.nickname, new_ratings[1]))
-
-        res = Result(
-            date_played = datetime.datetime.now(),
-            winner_user_id = winner.userid,
-            loser_user_id = loser.userid,
-            winner_old_rating = winner.rating,
-            loser_old_rating = loser.rating,
-            winner_new_rating = new_ratings[0],
-            loser_new_rating = new_ratings[1] 
-            )
-        res.put()
-        
-        winner.rating = new_ratings[0]
-        winner.put()
-        loser.rating = new_ratings[1]
-        loser.put()
-      
+        self.process_match_result(winner,loser)
+             
         self.redirect("/")
       else:  
         template_values = {"competitors": Competitor.ordered()}
@@ -141,6 +134,32 @@ class ResultHandler(webapp2.RequestHandler):
 
     else:
       self.redirect("/")
+
+  def process_match_result(self, winner, loser):
+    logging.info("result: %s(%s) defeated %s(%s)" % (winner.nickname, winner.rating, loser.nickname, loser.rating))
+        
+    new_ratings = self.calculate_elo_rank(winner.rating,loser.rating)
+
+    logging.info("new ratings are:")
+    logging.info("  %s - %s" % (winner.nickname, new_ratings[0]))
+    logging.info("  %s - %s" % (loser.nickname, new_ratings[1]))
+
+    res = Result(
+        date_played = datetime.datetime.now(),
+        winner_user_id = winner.userid,
+        loser_user_id = loser.userid,
+        winner_old_rating = winner.rating,
+        loser_old_rating = loser.rating,
+        winner_new_rating = new_ratings[0],
+        loser_new_rating = new_ratings[1] 
+        )
+    res.put()
+    
+    winner.rating = new_ratings[0]
+    winner.put()
+    loser.rating = new_ratings[1]
+    loser.put()
+
 
   # cribbed from http://forrst.com/raw_code/621864f2a579e520cc5c29159d233a2185d8d5bb
   def calculate_elo_rank(self, winner_rank, loser_rank):
@@ -164,6 +183,7 @@ class ResultHandler(webapp2.RequestHandler):
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/result', ResultHandler)
+    ('/result', ResultHandler),
+    ('/results', ResultsHandler)
 ], debug=True)
 

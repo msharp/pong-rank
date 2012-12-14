@@ -1,13 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <title>Pong Rankings</title>
-  <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
-  <link rel="stylesheet" type="text/css" href="/css/app.css" />
-</head>
-<body>
-
-  <div class="container">
+{% extends 'templates/layout.html' %}
+{% block body %}
 
     <h1>Add Match Result</h1>
 
@@ -26,7 +18,7 @@
           {% endfor %}
         </div>
         
-        <div class="span4" style="padding:2em 0;font-weight:bold; font-size:150%;">
+        <div class="span4" style="padding:2em 0;font-weight:bold; text-align:center; font-size:150%;">
           defeated
         </div>
         
@@ -47,6 +39,4 @@
       </div>
     </form>
 
-  </div>
-</body>
-</html>
+{% endblock %}
