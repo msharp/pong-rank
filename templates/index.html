@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Pong Rankings</title>
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
+  <link rel="stylesheet" type="text/css" href="/css/app.css" />
+</head>
+<body>
+
+  <div class="container">
+
+    <h1>Pong Rankings</h1>
+    <p>Welcome {{ user.nickname }}. <a href="{{ signout_url }}">sign out</a></p>
+
+      <ol class="ladder">  
+      {% for ranking in rankings %}
+        <li>{{ ranking.nickname }}</li>
+      {% endfor %}
+      </ol>
+
+  </div>
+</body>
+</html>
