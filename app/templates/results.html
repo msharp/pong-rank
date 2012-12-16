@@ -19,7 +19,7 @@
       <tbody>
         {% for result in results %}
         <tr>
-          <td>{{ result.date_played }}</td>
+          <td>{{ result.date_played.strftime("%d/%m/%Y") }}</td>
           <td>{{ result.winner_name() }}</td>
           <td>{{ result.loser_name() }}</td>
           <td>{{ result.points_transacted() }}</td>

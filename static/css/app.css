@@ -1,6 +1,4 @@
-ol.ladder {
-  font-size:150%;
-}
-ol.ladder li {
-  line-height:150%;
+table.ladder td {
+  font-size:125%;
+  vertical-align:middle;
 }
