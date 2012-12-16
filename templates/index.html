@@ -4,10 +4,25 @@
     <h1>Pong Rankings</h1>
     <p>Welcome {{ user.nickname }}. <a href="{{ signout_url }}">sign out</a></p>
 
-      <ol class="ladder">  
-      {% for ranking in rankings %}
-        <li>{{ ranking.nickname }}</li>
-      {% endfor %}
-      </ol>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Name</th>
+            <th>Rating</th>
+            <th>Results</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for ranking in rankings %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td>{{ ranking.nickname }}</td>
+              <td>{{ ranking.rating }}</td>
+              <td><a href="/results?userid={{ ranking.userid }}" class="btn">results</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
 
 {% endblock %}

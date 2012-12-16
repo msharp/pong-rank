@@ -15,3 +15,22 @@ indexes:
   - name: include_in_rankings
   - name: rating
     direction: desc
+
+- kind: Result
+  properties:
+  - name: loser_user_id
+  - name: date_played
+    direction: desc
+
+- kind: Result
+  properties:
+  - name: loser_user_id
+  - name: winner_user_id
+  - name: date_played
+    direction: desc
+
+- kind: Result
+  properties:
+  - name: winner_user_id
+  - name: date_played
+    direction: desc

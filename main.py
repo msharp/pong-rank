@@ -49,7 +49,6 @@ class Competitor(db.Model):
     r.filter("userid =", id)
     return r.get()
 
-
 class Result(db.Model):
   date_played = db.DateTimeProperty()
   winner_user_id = db.StringProperty()
@@ -67,6 +66,42 @@ class Result(db.Model):
     c = Competitor.by_id(self.loser_user_id)
     return c.nickname
 
+  def points_transacted(self):
+    return self.winner_new_rating - self.winner_old_rating
+
+  @staticmethod
+  def all_results():
+    q = Result.all()
+    q.order('-date_played')
+    q.get()
+    return [c for c in q]
+    
+  @staticmethod
+  def user_result(userid, won=True):
+    q = Result.all()
+    q.order('-date_played')
+    if won:
+      q.filter('winner_user_id =', userid)
+    else:
+      q.filter('loser_user_id =', userid)
+    q.get()
+    return [c for c in q]
+  
+  @staticmethod
+  def all_for(userid):
+    won = Result.user_result(userid, True)
+    lost = Result.user_result(userid, False)
+    return won + lost
+
+class RatingAdjustment(db.Model):
+  userid = db.StringProperty()
+  date = db.DateTimeProperty()
+  old_rating = db.FloatProperty()
+  new_rating = db.FloatProperty()
+  reason = db.StringProperty()
+
+##############  
+
 class MainHandler(webapp2.RequestHandler):
   def get(self):
     u = users.get_current_user()
@@ -83,7 +118,7 @@ class MainHandler(webapp2.RequestHandler):
       self.response.out.write(template.render(template_values)) 
 
     else:
-      greeting = ("You are not yet a member of the competition. <a href=\"%s\">Join the competition</a>." %
+      greeting = ("You are not signed in. <a href=\"%s\">Join the competition</a>." %
            users.create_login_url("/"))
       self.response.out.write("<html><body>%s</body></html>" % greeting)
 
@@ -103,10 +138,15 @@ class MainHandler(webapp2.RequestHandler):
 
 class ResultsHandler(webapp2.RequestHandler):
   def get(self):
-    q = Result.all()
-    q.order('-date_played')
-    q.get()
-    template_values = {'results': [r for r in q]}
+    if self.request.get("userid"):
+      c = Competitor.by_id(self.request.get("userid"))
+      logging.info("get results for %s " % (c.nickname))
+      results = Result.all_for(c.userid)
+    else:
+      c = None
+      results = Result.all_results()
+
+    template_values = {'results': results, 'competitor': c}
     template = jinja_environment.get_template('templates/results.html')
     self.response.out.write(template.render(template_values)) 
 

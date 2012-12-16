@@ -1,14 +1,19 @@
 {% extends 'templates/layout.html' %}
 {% block body %}
 
-    <h1>Match Results</h1>
-
+    <h1>Match Results</h1> 
+    <p>{% if competitor %}
+    Showing results for {{ competitor.nickname }}
+    {% else %}
+    Showing most recent results for all players.
+    {% endif %}</p>
     <table class="table table-striped">
       <thead>
         <tr>
           <th>Date</th>
           <th>Winner</th>
           <th>Loser</th>
+          <th>Points Transacted</th>
         </tr>
       </thead>
       <tbody>
@@ -17,6 +22,7 @@
           <td>{{ result.date_played }}</td>
           <td>{{ result.winner_name() }}</td>
           <td>{{ result.loser_name() }}</td>
+          <td>{{ result.points_transacted() }}</td>
         </tr>
         {% endfor %}
       </tbody>
