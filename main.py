@@ -21,7 +21,6 @@ from app.handlers import *
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
-    ('/result', ResultHandler),
+    ('/result', AddResultHandler),
     ('/results', ResultsHandler)
 ], debug=True)
-

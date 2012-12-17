@@ -67,7 +67,6 @@ class Result(db.Model):
     lost = Result.user_result(userid, False)
     return won + lost
 
-#TODO _ penalise for non-play; reward for most play
 class RatingAdjustment(db.Model):
   userid = db.StringProperty()
   date = db.DateTimeProperty()

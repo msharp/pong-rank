@@ -11,25 +11,24 @@ from google.appengine.api import users
 jinja_environment = jinja2.Environment(
     loader=jinja2.FileSystemLoader(os.path.dirname(__file__)))
 
-class MainHandler(webapp2.RequestHandler):
-  def get(self):
-    u = users.get_current_user()
-    if u:
-      user = self.find_or_add_user(u)
-      
-      template_values = {
-          "rankings": Competitor.ordered(),
-          "user": user,
-          "signout_url": users.create_logout_url("/")
-          }
+class ActiveUser():
+  def __init__(self):
+    # initialize with a appengine user object
+    self.loaded = False
+    if self.load():
+      self.loaded = True
     
-      template = jinja_environment.get_template('templates/index.html')
-      self.response.out.write(template.render(template_values)) 
-
-    else:
-      greeting = ("You are not signed in. <a href=\"%s\">Join the competition</a>." %
-           users.create_login_url("/"))
-      self.response.out.write("<html><body>%s</body></html>" % greeting)
+  def load(self):
+    user = users.get_current_user()
+    if user:
+      u = self.find_or_add_user(user)
+      self.userid = u.userid
+      self.nickname = u.nickname
+      self.rating = u.rating
+      self.is_scorekeeper = u.is_scorekeeper
+      self.include_in_rankings = u.include_in_rankings
+      self.signout_url = users.create_logout_url("/")
+      return True
 
   def find_or_add_user(self,user):
     if user:
@@ -45,25 +44,46 @@ class MainHandler(webapp2.RequestHandler):
         logging.info("recognised competitor " + u.userid)
       return u
 
+################
+
+class MainHandler(webapp2.RequestHandler):
+  def get(self):
+    user = ActiveUser()
+    if user.loaded:
+      template_values = {
+          "rankings": Competitor.ordered(),
+          "user": user
+          }
+      template = jinja_environment.get_template('templates/index.html')
+      self.response.out.write(template.render(template_values)) 
+
+    else:
+      greeting = ("You are not signed in. <a href=\"%s\">Join the competition</a>." %
+           users.create_login_url("/"))
+      self.response.out.write("<html><body>%s</body></html>" % greeting)
+
 class ResultsHandler(webapp2.RequestHandler):
   def get(self):
+    user = ActiveUser()
     if self.request.get("userid"):
-      c = Competitor.by_id(self.request.get("userid"))
-      logging.info("get results for %s " % (c.nickname))
-      results = Result.all_for(c.userid)
+      competitor = Competitor.by_id(self.request.get("userid"))
+      logging.info("get results for %s " % (competitor.nickname))
+      results = Result.all_for(competitor.userid)
     else:
-      c = None
+      competitor = None
       results = Result.all_results()
 
-    template_values = {'results': results, 'competitor': c}
+    template_values = {
+        'results': results, 
+        'competitor': competitor,
+        'user': user
+        }
     template = jinja_environment.get_template('templates/results.html')
     self.response.out.write(template.render(template_values)) 
 
-class ResultHandler(webapp2.RequestHandler):
+class AddResultHandler(webapp2.RequestHandler):
   def get(self):
-    u = users.get_current_user()
-    user = Competitor.by_id(u.user_id())
-    logging.info("got %s (%s)" % (user.nickname, user.is_scorekeeper))
+    user = ActiveUser()
     if user.is_scorekeeper:
 
       winner_id = self.request.get("W")
@@ -77,17 +97,21 @@ class ResultHandler(webapp2.RequestHandler):
              
         self.redirect("/")
       else:  
-        template_values = {"competitors": Competitor.ordered()}
+        template_values = {
+            'competitors': Competitor.ordered(),
+            'user': user
+          }
         template = jinja_environment.get_template('templates/result.html')
         self.response.out.write(template.render(template_values)) 
 
     else:
       self.redirect("/")
 
+  
   def process_match_result(self, winner, loser):
     logging.info("result: %s(%s) defeated %s(%s)" % (winner.nickname, winner.rating, loser.nickname, loser.rating))
         
-    new_ratings = self.calculate_elo_rank(winner.rating,loser.rating)
+    new_ratings = EloRating.calculate_elo_rank(winner.rating,loser.rating)
 
     logging.info("new ratings are:")
     logging.info("  %s - %s" % (winner.nickname, new_ratings[0]))
@@ -109,10 +133,12 @@ class ResultHandler(webapp2.RequestHandler):
     loser.rating = new_ratings[1]
     loser.put()
 
+class EloRating():
 
   # cribbed from http://forrst.com/raw_code/621864f2a579e520cc5c29159d233a2185d8d5bb
-  def calculate_elo_rank(self, winner_rank, loser_rank):
-    k = self.get_k_factor(winner_rank)
+  @staticmethod
+  def calculate_elo_rank(winner_rank, loser_rank):
+    k = EloRating.get_k_factor(winner_rank)
     rank_diff = winner_rank - loser_rank
     exp = (rank_diff * -1) / 400
     odds = 1 / (1 + math.pow(10, exp))
@@ -123,7 +149,8 @@ class ResultHandler(webapp2.RequestHandler):
       new_loser_rank = 0.0
     return (new_winner_rank, new_loser_rank)
 
-  def get_k_factor(self,winner_rank):
+  @staticmethod
+  def get_k_factor(winner_rank):
     if winner_rank < 2100:
       return 32
     if winner_rank >= 2100 and winner_rank < 2400:

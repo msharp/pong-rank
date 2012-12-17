@@ -3,26 +3,30 @@
 <head>
   <title>Pong Rankings</title>
   <link rel="stylesheet" type="text/css" href="/css/bootstrap.css" />
+  <link rel="stylesheet" type="text/css" href="/css/bootstrap-responsive.css" />
   <link rel="stylesheet" type="text/css" href="/css/app.css" />
 </head>
 <body>
-<div class="navbar navbar-inverse">
+<div class="navbar">
   <div class="navbar-inner">
     <div class="container">
       <h1 class="brand">Pong Rank</h1>
       <ul class="nav">
         <li><a href="/">Ladder</a></li>
         <li><a href="/results">Results</a></li>
+        {% if user.is_scorekeeper %}
         <li><a href="/result">Add a Result</a></li>
+        {% endif %}
       </ul>
+      <p class="pull-right"><a href="{{ user.signout_url }}">sign out</a> {{ user.nickname }}</p>
     </div>
   </div>
 </div>
 
-  <div class="container">
-  {% block body %}
+<div class="container">
+{% block body %}
 
-  {% endblock %}
-  </div>
+{% endblock %}
+</div>
 </body>
 </html>

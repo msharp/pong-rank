@@ -1,12 +1,16 @@
 {% extends 'templates/layout.html' %}
 {% block body %}
 
-    <h1>Match Results</h1> 
+    <div class="page-header">
+      <h1>Match Results</h1> 
+    </div>
+
     <p>{% if competitor %}
     Showing results for {{ competitor.nickname }}
     {% else %}
-    Showing most recent results for all players.
+      Showing most recent results for all players.
     {% endif %}</p>
+
     <table class="table table-striped">
       <thead>
         <tr>
