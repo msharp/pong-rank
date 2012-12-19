@@ -7,13 +7,14 @@
   <link rel="stylesheet" type="text/css" href="/css/app.css" />
 </head>
 <body>
-<div class="navbar">
+<div class="navbar navbar-fixed-top">
   <div class="navbar-inner">
     <div class="container">
       <h1 class="brand">Pong Rank</h1>
       <ul class="nav">
         <li><a href="/">Ladder</a></li>
         <li><a href="/results">Results</a></li>
+        <li><a href="/calculator">Rating Calculator</a></li>
         {% if user.is_scorekeeper %}
         <li><a href="/result">Add a Result</a></li>
         {% endif %}

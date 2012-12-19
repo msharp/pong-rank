@@ -51,7 +51,7 @@ class Result(db.Model):
     return [c for c in q]
     
   @staticmethod
-  def user_result(userid, won=True):
+  def user_results(userid, won=True):
     q = Result.all()
     q.order('-date_played')
     if won:
@@ -63,9 +63,36 @@ class Result(db.Model):
   
   @staticmethod
   def all_for(userid):
-    won = Result.user_result(userid, True)
-    lost = Result.user_result(userid, False)
+    won = Result.user_results(userid, True)
+    lost = Result.user_results(userid, False)
     return won + lost
+
+  @staticmethod
+  def process_match_result(winner, loser):
+    logging.info("result: %s(%s) defeated %s(%s)" % (winner.nickname, winner.rating, loser.nickname, loser.rating))
+        
+    new_ratings = EloRating.calculate_elo_rank(winner.rating,loser.rating)
+
+    logging.info("new ratings are:")
+    logging.info("  %s - %s" % (winner.nickname, new_ratings[0]))
+    logging.info("  %s - %s" % (loser.nickname, new_ratings[1]))
+
+    res = Result(
+        date_played = datetime.datetime.now(),
+        winner_user_id = winner.userid,
+        loser_user_id = loser.userid,
+        winner_old_rating = winner.rating,
+        loser_old_rating = loser.rating,
+        winner_new_rating = new_ratings[0],
+        loser_new_rating = new_ratings[1] 
+        )
+    res.put()
+    
+    winner.rating = new_ratings[0]
+    loser.rating = new_ratings[1]
+    winner.put()
+    loser.put()
+
 
 #TODO _ penalise for non-play; reward for most play
 class RatingAdjustment(db.Model):

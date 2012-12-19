@@ -1,0 +1,33 @@
+{% extends 'templates/layout.html' %}
+{% block body %}
+
+    <div class="page-header">
+      <h1>Rating Calculator</h1> 
+    </div>
+
+
+    {% if new_ratings  %}
+    <div class="alert alert-info">
+      Your current rating is <strong>{{ user.rating }}</strong>.
+      If you defeated <strong>{{ target.nickname }}</strong>, your new rating would be <strong>{{ new_ratings[0] }}</strong>
+    </div>
+    {% endif %}
+
+    <p>Calculate your Elo rating for defeating another player.</p>
+    <form>
+
+      <select name="target">
+        {% for competitor in competitors %}
+          {% if competitor.userid != user.userid %}
+            <option value="{{ competitor.userid }}">{{ loop.index }} {{ competitor.nickname }} [{{ competitor.rating }}]</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">Calculate rating</button>
+      </div>
+
+    </form>
+      
+{% endblock %}
