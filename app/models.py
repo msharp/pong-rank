@@ -1,5 +1,10 @@
 
+import logging
+import operator
+import datetime
 from google.appengine.ext import db
+
+from app.elo_rating import *
 
 BASE_RANK = 1200.0
 
@@ -65,7 +70,11 @@ class Result(db.Model):
   def all_for(userid):
     won = Result.user_results(userid, True)
     lost = Result.user_results(userid, False)
-    return won + lost
+    return sorted(
+        (won + lost), 
+        key=operator.attrgetter('date_played'), 
+        reverse=True)
+    
 
   @staticmethod
   def process_match_result(winner, loser):

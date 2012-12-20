@@ -13,12 +13,13 @@
 
         <div class="span4">
           <h2>Winner</h2>
-          {% for competitor in competitors %}
-          <label class="radio">
-            <input type="radio" name="W" id="W_{{ competitor.userid }}" value="{{ competitor.userid }}">
-            {{ competitor.nickname}}
-          </label>
-          {% endfor %}
+
+          <select name="W">
+            {% for competitor in competitors %}
+              <option value="{{ competitor.userid }}">{{ competitor.nickname }}</option>
+            {% endfor %}
+          </select>
+
         </div>
         
         <div class="span3" style="padding:2em 0;font-weight:bold; font-size:150%;">
@@ -27,13 +28,14 @@
         
         <div class="span4">
           <h2>Loser</h2>
-          {% for competitor in competitors %}
-          <label class="radio">
-            <input type="radio" name="L" id="L_{{ competitor.userid }}" value="{{ competitor.userid }}">
-            {{ competitor.nickname}}
-          </label>
-          {% endfor %}
-        </div>
+
+          <select name="L">
+            {% for competitor in competitors %}
+              <option value="{{ competitor.userid }}">{{ competitor.nickname }}</option>
+            {% endfor %}
+          </select>
+
+       </div>
         
       </div>
       <div class="form-actions">
